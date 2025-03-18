@@ -1,0 +1,14 @@
+{
+  "name": "fetch-post-json",
+  "version": "1.0.0",
+  "description": "Fetch JSON from POST URL and save HTML",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "prompt-sync": "^4.2.0",
+    "fs": "0.0.1-security"
+  }
+}
