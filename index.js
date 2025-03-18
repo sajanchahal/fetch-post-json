@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const puppeteer = require('puppeteer-core');
-const { executablePath } = require('puppeteer');
+const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,7 +20,6 @@ app.post('/fetch', async (req, res) => {
     try {
         const browser = await puppeteer.launch({
             headless: true,
-            executablePath: executablePath(), // find local chromium
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
