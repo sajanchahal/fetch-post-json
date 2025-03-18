@@ -5,7 +5,7 @@ const axios = require('axios');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// HTML form route
+// Show HTML form
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Fetch JSON route
+// Fetch JSON with browser-like headers
 app.post('/fetch', async (req, res) => {
     const { url, method } = req.body;
 
