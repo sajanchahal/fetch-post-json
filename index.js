@@ -1,26 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Show HTML form
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
         <html lang="en">
-        <head><meta charset="UTF-8"><title>Fetch JSON 403 Bypass</title></head>
+        <head><meta charset="UTF-8"><title>Puppeteer JSON Fetch</title></head>
         <body>
-            <h2>Fetch JSON Data (403 Bypass)</h2>
+            <h2>Fetch JSON Using Real Browser (403 Bypass)</h2>
             <form action="/fetch" method="post">
                 <label>Enter URL: <input type="url" name="url" required></label><br><br>
-                <label>Method:
-                    <select name="method">
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
-                    </select>
-                </label><br><br>
                 <button type="submit">Fetch JSON</button>
             </form>
         </body>
@@ -28,26 +21,30 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Fetch JSON with browser-like headers
 app.post('/fetch', async (req, res) => {
-    const { url, method } = req.body;
+    const { url } = req.body;
 
     try {
-        const response = await axios({
-            method: method.toLowerCase(),
-            url: url,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                'Accept': 'application/json, text/plain, */*',
-                'Referer': url,
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Connection': 'keep-alive'
-            }
-        });
+        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        await page.goto(url, { waitUntil: 'networkidle2' });
 
-        res.send(`<h3>Response:</h3><pre>${JSON.stringify(response.data, null, 2)}</pre><br><a href="/">Back</a>`);
-    } catch (err) {
-        res.send(`<pre>Error: ${err.response ? 'HTTP ' + err.response.status : err.message}</pre><br><a href="/">Back</a>`);
+        const bodyText = await page.evaluate(() => document.querySelector('body').innerText);
+        
+        await browser.close();
+
+        // Try parsing as JSON
+        let json;
+        try {
+            json = JSON.parse(bodyText);
+        } catch (e) {
+            return res.send(`<pre>Could not parse response as JSON.</pre><br><a href="/">Back</a>`);
+        }
+
+        res.send(`<h3>Fetched Response:</h3><pre>${JSON.stringify(json, null, 2)}</pre><br><a href="/">Back</a>`);
+    } catch (error) {
+        res.send(`<pre>Error: ${error.message}</pre><br><a href="/">Back</a>`);
     }
 });
 
